@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Manajemen Gardu & Trafo</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex">
+
+    <div class="w-64 bg-slate-800 text-slate-100 min-h-screen flex flex-col shrink-0 shadow-xl">
+        <div class="p-5 border-b border-slate-700 bg-slate-900">
+            <h1 class="text-lg font-bold text-emerald-400 flex items-center gap-2">⚡ Gardu Management</h1>
+            <p class="text-xs text-slate-400 mt-1">Sistem Data Terintegrasi</p>
+        </div>
+        <nav class="flex-1 p-4 space-y-2">
+            <button onclick="bukaMenu('menuTrafo')" id="btn-menuTrafo" class="menu-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-lg transition bg-emerald-600 text-white shadow-md">📦 Info Trafo</button>
+            <button onclick="bukaMenu('menuFuse')" id="btn-menuFuse" class="menu-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-lg transition hover:bg-slate-700 text-slate-300">🏷️ Data Fuse / Jurusan</button>
+            <button onclick="bukaMenu('menuKonstruksi')" id="btn-menuKonstruksi" class="menu-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-lg transition hover:bg-slate-700 text-slate-300">🏗️ Data Konstruksi</button>
+        </nav>
+        <div class="p-4 border-t border-slate-700 text-center text-xs text-slate-500 bg-slate-900">Versi Cloud v4.0</div>
+    </div>
+
+    <div class="flex-1 p-8 overflow-y-auto h-screen">
+        
+        <div id="menuTrafo" class="menu-content space-y-6">
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h2 id="formTitleTrafo" class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Input Data Trafo</h2>
+                <form id="trafoForm" class="space-y-4" onsubmit="simpanDataTrafo(event)">
+                    <input type="hidden" id="modeTrafo" value="tambah">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div><label class="block text-xs font-semibold text-gray-700 mb-1">Nama Trafo:</label><input type="text" id="namaTrafo" required class="w-full px-3 py-1.5 text-sm border rounded-md"></div>
+                        <div><label class="block text-xs font-semibold text-gray-700 mb-1">Merek:</label><input type="text" id="merekTrafo" required class="w-full px-3 py-1.5 text-sm border rounded-md"></div>
+                        <div><label class="block text-xs font-semibold text-gray-700 mb-1">No Seri:</label><input type="text" id="noSeriTrafo" required class="w-full px-3 py-1.5 text-sm border rounded-md"></div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                        <div><label class="block text-xs font-semibold text-gray-700 mb-1">Tahun:</label><input type="number" id="tahunTrafo" required class="w-full px-3 py-1.5 text-sm border rounded-md"></div>
+                        <div><label class="block text-xs font-semibold text-gray-700 mb-1">Penyulang:</label><input type="text" id="penyulangTrafo" required class="w-full px-3 py-1.5 text-sm border rounded-md"></div>
+                        <div><label class="block text-xs font-semibold text-gray-700 mb-1">Keypoint:</label><input type="text" id="keypointTrafo" class="w-full px-3 py-1.5 text-sm border rounded-md"></div>
+                        <div><label class="block text-xs font-semibold text-gray-700 mb-1">Kapasitas (kVA):</label><input type="number" id="kvaTrafo" required class="w-full px-3 py-1.5 text-sm border rounded-md"></div>
+                    </div>
+                    <div><label class="block text-xs font-semibold text-gray-700 mb-1">Lokasi:</label><input type="text" id="lokasiTrafo" required class="w-full px-3 py-1.5 text-sm border rounded-md"></div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div><label class="block text-xs font-semibold text-gray-700 mb-1">Jumlah Jurusan:</label><input type="number" id="jumlahJurusan" required class="w-full px-3 py-1.5 text-sm border rounded-md"></div>
+                        <div><label class="block text-xs font-semibold text-gray-700 mb-1">Fasa:</label><select id="jumlahFasa" class="w-full px-3 py-1.5 text-sm border rounded-md bg-white"><option value="3 Fasa">3 Fasa</option><option value="1 Fasa">1 Fasa</option></select></div>
+                        <div><label class="block text-xs font-semibold text-gray-700 mb-1">Konstruksi:</label><select id="konstruksiTrafo" class="w-full px-3 py-1.5 text-sm border rounded-md bg-white"><option value="Gardu Portal (2 Tiang)">Gardu Portal (2 Tiang)</option><option value="Gardu Beton">Gardu Beton</option><option value="Gardu Kios">Gardu Kios</option><option value="Gardu Cantol (1 Tiang)">Gardu Cantol (1 Tiang)</option></select></div>
+                    </div>
+                    <div class="flex gap-2"><button type="submit" id="btnSubmitTrafo" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold py-2 rounded-md transition cursor-pointer">Kirim ke Google Drive</button><button type="button" id="btnBatalTrafo" onclick="resetFormTrafo()" class="hidden w-1/4 bg-gray-500 text-white text-sm rounded-md">Batal</button></div>
+                </form>
+            </div>
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="flex justify-between items-center mb-4"><h3 class="text-md font-bold text-gray-800">Database Trafo</h3><button onclick="tarikData('trafo')" class="bg-blue-600 text-white text-xs px-3 py-1.5 rounded-md cursor-pointer">🔄 Sinkronisasi</button></div>
+                <input type="text" id="cariTrafo" onkeyup="saringTabel('trafo')" placeholder="Cari data trafo..." class="w-full px-3 py-1.5 border rounded-lg text-sm mb-4">
+                <div class="overflow-x-auto border rounded-lg"><table class="min-w-full divide-y text-xs text-left text-gray-600"><thead class="bg-gray-50 text-gray-700 uppercase font-semibold"><tr><th class="px-3 py-2.5">Nama</th><th class="px-3 py-2.5">Merek</th><th class="px-3 py-2.5">No. Seri</th><th class="px-3 py-2.5">Kapasitas</th><th class="px-3 py-2.5">Penyulang</th><th class="px-3 py-2.5">Keypoint</th><th class="px-3 py-2.5 text-center">Jurusan</th><th class="px-3 py-2.5">Fasa</th><th class="px-3 py-2.5">Konstruksi</th><th class="px-3 py-2.5">Tahun</th><th class="px-3 py-2.5">Lokasi</th><th class="px-3 py-2.5 text-center">Aksi</th></tr></thead><tbody id="tabelTrafoBody" class="divide-y bg-white"><tr><td colspan="12" class="text-center py-4 text-gray-400">Klik Sinkronisasi untuk memuat data.</td></tr></tbody></table></div>
+            </div>
+        </div>
+
+        <div id="menuFuse" class="menu-content hidden space-y-6">
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h2 id="formTitleFuse" class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Input Data Fuse & Beban Fasa Jurusan</h2>
+                <form id="fuseForm" class="space-y-4" onsubmit="simpanDataFuse(event)">
+                    <input type="hidden" id="modeFuse" value="tambah">
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div><label class="block text-xs font-semibold text-gray-700 mb-1">Nama Gardu:</label><input type="text" id="namaGarduFuse" required class="w-full px-3 py-1.5 text-sm border rounded-md"></div>
+                        <div><label class="block text-xs font-semibold text-gray-700 mb-1">Jenis Handle NT Fuse:</label><input type="text" id="jenisHandle" placeholder="Contoh: NH Fuse, LBS" class="w-full px-3 py-1.5 text-sm border rounded-md"></div>
+                        <div><label class="block text-xs font-semibold text-gray-700 mb-1">Kapasitas Arus Handle (A):</label><input type="number" id="arusHandle" placeholder="Contoh: 400" class="w-full px-3 py-1.5 text-sm border rounded-md"></div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50 p-4 rounded-lg border">
+                        <div class="p-2 border rounded bg-white">
+                            <span class="block text-xs font-bold text-amber-700 mb-2 border-b pb-1">⚡ Jurusan 1 (Amperemeter)</span>
+                            <div class="space-y-2">
+                                <div class="flex items-center gap-2"><span class="text-xs font-mono w-4">R:</span><input type="number" id="j1R" placeholder="0" class="w-full px-2 py-1 text-xs border rounded"></div>
+                                <div class="flex items-center gap-2"><span class="text-xs font-mono w-4">S:</span><input type="number" id="j1S" placeholder="0" class="w-full px-2 py-1 text-xs border rounded"></div>
+                                <div class="flex items-center gap-2"><span class="text-xs font-mono w-4">T:</span><input type="number" id="j1T" placeholder="0" class="w-full px-2 py-1 text-xs border rounded"></div>
+                            </div>
+                        </div>
+                        <div class="p-2 border rounded bg-white">
+                            <span class="block text-xs font-bold text-blue-700 mb-2 border-b pb-1">⚡ Jurusan 2 (Amperemeter)</span>
+                            <div class="space-y-2">
+                                <div class="flex items-center gap-2"><span class="text-xs font-mono w-4">R:</span><input type="number" id="j2R" placeholder="0" class="w-full px-2 py-1 text-xs border rounded"></div>
+                                <div class="flex items-center gap-2"><span class="text-xs font-mono w-4">S:</span><input type="number" id="j2S" placeholder="0" class="w-full px-2 py-1 text-xs border rounded"></div>
+                                <div class="flex items-center gap-2"><span class="text-xs font-mono w-4">T:</span><input type="number" id="j2T" placeholder="0" class="w-full px-2 py-1 text-xs border rounded"></div>
+                            </div>
+                        </div>
+                        <div class="p-2 border rounded bg-white">
+                            <span class="block text-xs font-bold text-emerald-700 mb-2 border-b pb-1">⚡ Jurusan 3 (Amperemeter)</span>
+                            <div class="space-y-2">
+                                <div class="flex items-center gap-2"><span class="text-xs font-mono w-4">R:</span><input type="number" id="j3R" placeholder="0" class="w-full px-2 py-1 text-xs border rounded"></div>
+                                <div class="flex items-center gap-2"><span class="text-xs font-mono w-4">S:</span><input type="number" id="j3S" placeholder="0" class="w-full px-2 py-1 text-xs border rounded"></div>
+                                <div class="flex items-center gap-2"><span class="text-xs font-mono w-4">T:</span><input type="number" id="j3T" placeholder="0" class="w-full px-2 py-1 text-xs border rounded"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-2"><button type="submit" id="btnSubmitFuse" class="w-full bg-amber-600 hover:bg-amber-700 text-white text-sm font-semibold py-2 rounded-md transition cursor-pointer">Kirim Data Fuse & Fasa</button><button type="button" id="btnBatalFuse" onclick="resetFormFuse()" class="hidden w-1/4 bg-gray-500 text-white text-sm rounded-md">Batal</button></div>
+                </form>
+            </div>
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="flex justify-between items-center mb-4"><h3 class="text-md font-bold text-gray-800">Database Fuse & Fasa Jurusan</h3><button onclick="tarikData('fuse')" class="bg-blue-600 text-white text-xs px-3 py-1.5 rounded-md cursor-pointer">🔄 Sinkronisasi</button></div>
+                <input type="text" id="cariFuse" onkeyup="saringTabel('fuse')" placeholder="Cari data gardu fuse..." class="w-full px-3 py-1.5 border rounded-lg text-sm mb-4">
+                <div class="overflow-x-auto border rounded-lg"><table class="min-w-full divide-y text-xs text-left text-gray-600"><thead class="bg-gray-50 text-gray-700 font-semibold uppercase"><tr><th class="px-2 py-2 border-r" rowspan="2">Nama Gardu</th><th class="px-2 py-2 border-r" rowspan="2">Jenis Handle</th><th class="px-2 py-2 border-r" rowspan="2">Arus Handle</th><th class="px-2 py-1 text-center border-b border-r" colspan="3">Jurusan 1 (A)</th><th class="px-2 py-1 text-center border-b border-r" colspan="3">Jurusan 2 (A)</th><th class="px-2 py-1 text-center border-b border-r" colspan="3">Jurusan 3 (A)</th><th class="px-2 py-2 text-center" rowspan="2">Aksi</th></tr><tr><th class="px-2 py-1 text-center border-r bg-slate-50">R</th><th class="px-2 py-1 text-center border-r bg-slate-50">S</th><th class="px-2 py-1 text-center border-r bg-slate-50">T</th><th class="px-2 py-1 text-center border-r bg-slate-50">R</th><th class="px-2 py-1 text-center border-r bg-slate-50">S</th><th class="px-2 py-1 text-center border-r bg-slate-50">T</th><th class="px-2 py-1 text-center border-r bg-slate-50">R</th><th class="px-2 py-1 text-center border-r bg-slate-50">S</th><th class="px-2 py-1 text-center border-r bg-slate-50">T</th></tr></thead><tbody id="tabelFuseBody" class="divide-y bg-white"><tr><td colspan="13" class="text-center py-4 text-gray-400">Klik Sinkronisasi untuk memuat data.</td></tr></tbody></table></div>
+            </div>
+        </div>
+
+        <div id="menuKonstruksi" class="menu-content hidden space-y-6">
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h2 id="formTitleKonstruksi" class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Input Atribut Konstruksi & Proteksi Gardu</h2>
+                <form id="konstruksiForm" class="space-y-4" onsubmit="simpanDataKonstruksi(event)">
+                    <input type="hidden" id="modeKonstruksi" value="tambah">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div><label class="block text-xs font-semibold text-gray-700 mb-1">Nama Gardu:</label><input type="text" id="namaGarduKonstruksi" required class="w-full px-3 py-1.5 text-sm border rounded-md"></div>
+                        <div><label class="block text-xs font-semibold text-gray-700 mb-1">Jenis Tiang:</label><select id="jenisTiang" class="w-full px-3 py-1.5 text-sm border rounded-md bg-white"><option value="Tiang Beton">Tiang Beton</option><option value="Tiang Besi">Tiang Besi</option></select></div>
+                        <div><label class="block text-xs font-semibold text-gray-700 mb-1">Nilai Pentanahan / Grounding (Ω):</label><input type="number" step="0.1" id="nilaiPentanahan" required placeholder="Contoh: 1.8" class="w-full px-3 py-1.5 text-sm border rounded-md"></div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div><label class="block text-xs font-semibold text-gray-700 mb-1">Jenis / Kapasitas Lightning Arrester:</label><input type="text" id="jenisArrester" placeholder="Contoh: Metal Oxide 10kA" class="w-full px-3 py-1.5 text-sm border rounded-md"></div>
+                        <div><label class="block text-xs font-semibold text-gray-700 mb-1">Jenis / Ukuran FCO (Fuse Cut Out):</label><input type="text" id="jenisFCO" placeholder="Contoh: Polymer 20kV 100A" class="w-full px-3 py-1.5 text-sm border rounded-md"></div>
+                    </div>
+                    <div class="flex gap-2"><button type="submit" id="btnSubmitKonstruksi" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-2 rounded-md transition cursor-pointer">Kirim Data Konstruksi</button><button type="button" id="btnBatalKonstruksi" onclick="resetFormKonstruksi()" class="hidden w-1/4 bg-gray-500 text-white text-sm rounded-md">Batal</button></div>
+                </form>
+            </div>
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="flex justify-between items-center mb-4"><h3 class="text-md font-bold text-gray-800">Database Spesifikasi & Proteksi Konstruksi</h3><button onclick="tarikData('konstruksi')" class="bg-blue-600 text-white text-xs px-3 py-1.5 rounded-md cursor-pointer">🔄 Sinkronisasi</button></div>
+                <input type="text" id="cariKonstruksi" onkeyup="saringTabel('konstruksi')" placeholder="Cari data fisik gardu..." class="w-full px-3 py-1.5 border rounded-lg text-sm mb-4">
+                <div class="overflow-x-auto border rounded-lg"><table class="min-w-full divide-y text-xs text-left text-gray-600"><thead class="bg-gray-50 text-gray-700 uppercase font-semibold"><tr><th class="px-3 py-2.5">Nama Gardu</th><th class="px-3 py-2.5">Jenis Tiang</th><th class="px-3 py-2.5">Nilai Pentanahan</th><th class="px-3 py-2.5">Jenis Arrester</th><th class="px-3 py-2.5">Jenis FCO</th><th class="px-3 py-2.5 text-center">Aksi</th></tr></thead><tbody id="tabelKonstruksiBody" class="divide-y bg-white"><tr><td colspan="6" class="text-center py-4 text-gray-400">Klik Sinkronisasi untuk memuat data.</td></tr></tbody></table></div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // PASTIKAN URL WEB APP APPS SCRIPT SUDAH RE-DEPLOYED DAN AKURAT DI SINI
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6SOheVncYB4azUzUls9MMVwfXEbYy3zyYpt9A_yzUwxYZl8bjou5rNYP8_baqK_72/exec";
+
+        let dbTrafo = [], dbFuse = [], dbKonstruksi = [];
+
+        function bukaMenu(idMenu) {
+            document.querySelectorAll('.menu-content').forEach(c => c.classList.add('hidden'));
+            document.getElementById(idMenu).classList.remove('hidden');
+            document.querySelectorAll('.menu-btn').forEach(b => b.className = "menu-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-lg transition hover:bg-slate-700 text-slate-300");
+            document.getElementById('btn-' + idMenu).className = "menu-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-lg transition bg-emerald-600 text-white shadow-md";
+        }
+
+        function tarikData(type) {
+            let tbody = document.getElementById(`tabel${type.charAt(0).toUpperCase() + type.slice(1)}Body`);
+            let colSpan = type === 'trafo' ? 12 : (type === 'fuse' ? 13 : 6);
+            tbody.innerHTML = `<tr><td colspan="${colSpan}" class="text-center py-4 text-blue-600 font-medium animate-pulse">Sinkronisasi data cloud...</td></tr>`;
+
+            fetch(`${WEB_APP_URL}?target=${type}`, { method: "GET" })
+            .then(res => res.json())
+            .then(data => {
+                if(type === 'trafo') { dbTrafo = data; renderTrafo(dbTrafo); }
+                else if(type === 'fuse') { dbFuse = data; renderFuse(dbFuse); }
+                else if(type === 'konstruksi') { dbKonstruksi = data; renderKonstruksi(dbKonstruksi); }
+            }).catch(() => {
+                tbody.innerHTML = `<tr><td colspan="${colSpan}" class="text-center py-4 text-red-500">Gagal terhubung ke cloud.</td></tr>`;
+            });
+        }
+
+        function renderTrafo(arr) {
+            let tbody = document.getElementById('tabelTrafoBody'); tbody.innerHTML = '';
+            if(arr.length===0) { tbody.innerHTML='<tr><td colspan="12" class="text-center py-4">Kosong</td></tr>'; return; }
+            arr.forEach((t, i) => {
+                tbody.innerHTML += `<tr><td class="px-3 py-2 font-semibold">${t.nama}</td><td class="px-3 py-2">${t.merek}</td><td class="px-3 py-2 font-mono">${t.noSeri}</td><td class="px-3 py-2 text-emerald-700 font-bold">${t.kva} kVA</td><td class="px-3 py-2">${t.penyulang}</td><td class="px-3 py-2">${t.keypoint}</td><td class="px-3 py-2 text-center">${t.jurusan}</td><td class="px-3 py-2">${t.fasa}</td><td class="px-3 py-2">${t.konstruksi}</td><td class="px-3 py-2">${t.tahun}</td><td class="px-3 py-2 truncate max-w-[100px]">${t.lokasiNama}</td><td class="px-3 py-2 text-center"><button onclick="editTrafo(${i})" class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-xs font-bold">Edit</button></td></tr>`;
+            });
+        }
+
+        function renderFuse(arr) {
+            let tbody = document.getElementById('tabelFuseBody'); tbody.innerHTML = '';
+            if(arr.length===0) { tbody.innerHTML='<tr><td colspan="13" class="text-center py-4">Kosong</td></tr>'; return; }
+            arr.forEach((f, i) => {
+                tbody.innerHTML += `<tr><td class="px-2 py-2 font-bold text-slate-800 border-r">${f.namaGardu}</td><td class="px-2 py-2 border-r">${f.jenisHandle || '-'}</td><td class="px-2 py-2 border-r font-medium">${f.arusHandle || 0} A</td><td class="px-2 py-2 text-center border-r bg-orange-50">${f.j1R || 0}</td><td class="px-2 py-2 text-center border-r bg-orange-50">${f.j1S || 0}</td><td class="px-2 py-2 text-center border-r bg-orange-50">${f.j1T || 0}</td><td class="px-2 py-2 text-center border-r bg-blue-50">${f.j2R || 0}</td><td class="px-2 py-2 text-center border-r bg-blue-50">${f.j2S || 0}</td><td class="px-2 py-2 text-center border-r bg-blue-50">${f.j2T || 0}</td><td class="px-2 py-2 text-center border-r bg-emerald-50">${f.j3R || 0}</td><td class="px-2 py-2 text-center border-r bg-emerald-50">${f.j3S || 0}</td><td class="px-2 py-2 text-center border-r bg-emerald-50">${f.j3T || 0}</td><td class="px-2 py-2 text-center"><button onclick="editFuse(${i})" class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-xs font-bold">Edit</button></td></tr>`;
+            });
+        }
+
+        function renderKonstruksi(arr) {
+            let tbody = document.getElementById('tabelKonstruksiBody'); tbody.innerHTML = '';
+            if(arr.length===0) { tbody.innerHTML='<tr><td colspan="6" class="text-center py-4">Kosong</td></tr>'; return; }
+            arr.forEach((k, i) => {
+                tbody.innerHTML += `<tr><td class="px-3 py-2 font-semibold">${k.namaGardu}</td><td class="px-3 py-2">${k.jenisTiang}</td><td class="px-3 py-2 font-bold ${k.nilaiPentanahan > 5 ? 'text-red-600': 'text-emerald-600'}">${k.nilaiPentanahan} Ω</td><td class="px-3 py-2">${k.jenisArrester || '-'}</td><td class="px-3 py-2 text-gray-700 font-medium">${k.jenisFCO || '-'}</td><td class="px-3 py-2 text-center"><button onclick="editKonstruksi(${i})" class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-xs font-bold">Edit</button></td></tr>`;
+            });
+        }
+
+        function simpanDataTrafo(e) {
+            e.preventDefault();
+            let pack = {
+                jenisSheet: "trafo", aksi: document.getElementById('modeTrafo').value, idKunci: document.getElementById('noSeriTrafo').value,
+                nama: document.getElementById('namaTrafo').value, merek: document.getElementById('merekTrafo').value, noSeri: document.getElementById('noSeriTrafo').value,
+                tahun: document.getElementById('tahunTrafo').value, penyulang: document.getElementById('penyulangTrafo').value, keypoint: document.getElementById('keypointTrafo').value || '-',
+                kva: document.getElementById('kvaTrafo').value, lokasiNama: document.getElementById('lokasiTrafo').value, jurusan: document.getElementById('jumlahJurusan').value,
+                fasa: document.getElementById('jumlahFasa').value, konstruksi: document.getElementById('konstruksiTrafo').value
+            };
+            postCloud(pack, 'trafo', resetFormTrafo);
+        }
+
+        function simpanDataFuse(e) {
+            e.preventDefault();
+            let pack = {
+                jenisSheet: "fuse", aksi: document.getElementById('modeFuse').value, idKunci: document.getElementById('namaGarduFuse').value,
+                namaGardu: document.getElementById('namaGarduFuse').value, jenisHandle: document.getElementById('jenisHandle').value || '-', arusHandle: document.getElementById('arusHandle').value || 0,
+                j1R: document.getElementById('j1R').value || 0, j1S: document.getElementById('j1S').value || 0, j1T: document.getElementById('j1T').value || 0,
+                j2R: document.getElementById('j2R').value || 0, j2S: document.getElementById('j2S').value || 0, j2T: document.getElementById('j2T').value || 0,
+                j3R: document.getElementById('j3R').value || 0, j3S: document.getElementById('j3S').value || 0, j3T: document.getElementById('j3T').value || 0
+            };
+            postCloud(pack, 'fuse', resetFormFuse);
+        }
+
+        function simpanDataKonstruksi(e) {
+            e.preventDefault();
+            let pack = {
+                jenisSheet: "konstruksi", aksi: document.getElementById('modeKonstruksi').value, idKunci: document.getElementById('namaGarduKonstruksi').value,
+                namaGardu: document.getElementById('namaGarduKonstruksi').value, jenisTiang: document.getElementById('jenisTiang').value,
+                nilaiPentanahan: document.getElementById('nilaiPentanahan').value, jenisArrester: document.getElementById('jenisArrester').value || '-', jenisFCO: document.getElementById('jenisFCO').value || '-'
+            };
+            postCloud(pack, 'konstruksi', resetFormKonstruksi);
+        }
+
+        function postCloud(packet, type, resetFn) {
+            fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", headers: {"Content-Type": "application/json"}, body: JSON.stringify(packet) })
+            .then(() => { alert("Sinkronisasi cloud berhasil!"); resetFn(); tarikData(type); })
+            .catch(() => alert("Koneksi cloud bermasalah."));
+        }
+
+        function editTrafo(i) {
+            let d = dbTrafo[i]; document.getElementById('namaTrafo').value = d.nama; document.getElementById('merekTrafo').value = d.merek;
+            document.getElementById('noSeriTrafo').value = d.noSeri; document.getElementById('noSeriTrafo').disabled = true;
+            document.getElementById('tahunTrafo').value = d.tahun; document.getElementById('penyulangTrafo').value = d.penyulang;
+            document.getElementById('keypointTrafo').value = d.keypoint; document.getElementById('kvaTrafo').value = d.kva;
+            document.getElementById('lokasiTrafo').value = d.lokasiNama; document.getElementById('jumlahJurusan').value = d.jurusan;
+            document.getElementById('jumlahFasa').value = d.fasa; document.getElementById('konstruksiTrafo').value = d.konstruksi;
+            document.getElementById('modeTrafo').value = "edit"; document.getElementById('btnBatalTrafo').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        function resetFormTrafo() { document.getElementById('trafoForm').reset(); document.getElementById('noSeriTrafo').disabled = false; document.getElementById('modeTrafo').value = "tambah"; document.getElementById('btnBatalTrafo').classList.add('hidden'); }
+
+        function editFuse(i) {
+            let d = dbFuse[i]; document.getElementById('namaGarduFuse').value = d.namaGardu; document.getElementById('namaGarduFuse').disabled = true;
+            document.getElementById('jenisHandle').value = d.jenisHandle; document.getElementById('arusHandle').value = d.arusHandle;
+            document.getElementById('j1R').value = d.j1R; document.getElementById('j1S').value = d.j1S; document.getElementById('j1T').value = d.j1T;
+            document.getElementById('j2R').value = d.j2R; document.getElementById('j2S').value = d.j2S; document.getElementById('j2T').value = d.j2T;
+            document.getElementById('j3R').value = d.j3R; document.getElementById('j3S').value = d.j3S; document.getElementById('j3T').value = d.j3T;
+            document.getElementById('modeFuse').value = "edit"; document.getElementById('btnBatalFuse').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        function resetFormFuse() { document.getElementById('fuseForm').reset(); document.getElementById('namaGarduFuse').disabled = false; document.getElementById('modeFuse').value = "tambah"; document.getElementById('btnBatalFuse').classList.add('hidden'); }
+
+        function editKonstruksi(i) {
+            let d = dbKonstruksi[i]; document.getElementById('namaGarduKonstruksi').value = d.namaGardu; document.getElementById('namaGarduKonstruksi').disabled = true;
+            document.getElementById('jenisTiang').value = d.jenisTiang; document.getElementById('nilaiPentanahan').value = d.nilaiPentanahan;
+            document.getElementById('jenisArrester').value = d.jenisArrester; document.getElementById('jenisFCO').value = d.jenisFCO;
+            document.getElementById('modeKonstruksi').value = "edit"; document.getElementById('btnBatalKonstruksi').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        function resetFormKonstruksi() { document.getElementById('konstruksiForm').reset(); document.getElementById('namaGarduKonstruksi').disabled = false; document.getElementById('modeKonstruksi').value = "tambah"; document.getElementById('btnBatalKonstruksi').classList.add('hidden'); }
+
+        function saringTabel(type) {
+            let kw = document.getElementById(`cari${type.charAt(0).toUpperCase() + type.slice(1)}`).value.toLowerCase();
+            if(type === 'trafo') renderTrafo(dbTrafo.filter(t => t.nama.toLowerCase().includes(kw) || t.noSeri.toLowerCase().includes(kw) || t.penyulang.toLowerCase().includes(kw)));
+            else if(type === 'fuse') renderFuse(dbFuse.filter(f => f.namaGardu.toLowerCase().includes(kw) || f.jenisHandle.toLowerCase().includes(kw)));
+            else if(type === 'konstruksi') renderKonstruksi(dbKonstruksi.filter(k => k.namaGardu.toLowerCase().includes(kw) || k.jenisTiang.toLowerCase().includes(kw)));
+        }
+    </script>
+</body>
+</html>
