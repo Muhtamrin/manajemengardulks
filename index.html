@@ -320,26 +320,36 @@
         }
 function bukaModalEdit(type, id) {
     const modal = document.getElementById('modalEdit');
-    if (!modal) return;
+    if (!modal) {
+        alert("Peringatan: Elemen id 'modalEdit' tidak ditemukan di struktur HTML kamu!");
+        return;
+    }
+    
+    // Paksa jendela modal muncul ke layar terlebih dahulu
     modal.classList.remove('hidden');
     modal.classList.add('flex');
 
     const formContainer = document.getElementById('formEditContainer');
-    formContainer.innerHTML = '<p class="text-center py-4">Memuat data...</p>';
+    formContainer.innerHTML = '<p class="text-center py-4 text-gray-600">Memuat data komponen...</p>';
 
     let dataAmbil = null;
     let htmlForm = '';
 
+    // Deteksi pencarian otomatis yang toleran terhadap No Seri atau Nama Gardu
     if (type === 'trafo') {
-        dataAmbil = dbTrafo.find(item => item.noSeri === id || item.nama === id);
+        if (typeof dbTrafo !== 'undefined' && dbTrafo.length > 0) {
+            dataAmbil = dbTrafo.find(item => String(item.noSeri).trim() === String(id).trim() || String(item.nama).trim() === String(id).trim());
+        }
+        
+        // JIKA DATA DITEMUKAN, ISI FORM DENGAN DATA ASLI CLOUD
         if (dataAmbil) {
             htmlForm = `
                 <input type="hidden" id="editType" value="trafo">
-                <input type="hidden" id="editId" value="${dataAmbil.noSeri}">
+                <input type="hidden" id="editId" value="${dataAmbil.noSeri || dataAmbil.nama}">
                 <div class="grid grid-cols-2 gap-4 text-sm text-gray-800">
                     <div><label class="block font-medium mb-1">Nama Gardu</label><input type="text" id="editNama" value="${dataAmbil.nama || ''}" class="w-full border p-2 rounded"></div>
                     <div><label class="block font-medium mb-1">Merek</label><input type="text" id="editMerek" value="${dataAmbil.merek || ''}" class="w-full border p-2 rounded"></div>
-                    <div><label class="block font-medium mb-1">No Seri</label><input type="text" id="editNoSeri" value="${dataAmbil.noSeri || ''}" class="w-full border p-2 rounded" readonly bg-gray-100></div>
+                    <div><label class="block font-medium mb-1">No Seri</label><input type="text" id="editNoSeri" value="${dataAmbil.noSeri || ''}" class="w-full border p-2 rounded" readonly></div>
                     <div><label class="block font-medium mb-1">KVA</label><input type="text" id="editKva" value="${dataAmbil.kva || ''}" class="w-full border p-2 rounded"></div>
                     <div><label class="block font-medium mb-1">Penyulang</label><input type="text" id="editPenyulang" value="${dataAmbil.penyulang || ''}" class="w-full border p-2 rounded"></div>
                     <div><label class="block font-medium mb-1">Keypoint</label><input type="text" id="editKeypoint" value="${dataAmbil.keypoint || ''}" class="w-full border p-2 rounded"></div>
@@ -350,15 +360,32 @@ function bukaModalEdit(type, id) {
                     <div class="col-span-2"><label class="block font-medium mb-1">Titik Koordinat</label><input type="text" id="editLokasi" value="${dataAmbil.lokasiNama || ''}" class="w-full border p-2 rounded"></div>
                 </div>
             `;
+        } else {
+            // JIKA DATA DARI CLOUD BELUM MASUK, TETAP TAMPILKAN FORM KOSONG AGAR TOMBOL TIDAK SAKTI MACET
+            htmlForm = `
+                <div class="bg-yellow-50 p-3 rounded mb-4 text-xs text-yellow-700">⚠️ Database lokal kosong. Menampilkan form darurat (Gunakan tombol Sinkronisasi terlebih dahulu).</div>
+                <input type="hidden" id="editType" value="trafo">
+                <input type="hidden" id="editId" value="${id}">
+                <div class="grid grid-cols-2 gap-4 text-sm text-gray-800">
+                    <div><label class="block font-medium mb-1">Nama Gardu</label><input type="text" id="editNama" value="${id}" class="w-full border p-2 rounded"></div>
+                    <div><label class="block font-medium mb-1">Merek</label><input type="text" id="editMerek" class="w-full border p-2 rounded"></div>
+                    <div><label class="block font-medium mb-1">No Seri</label><input type="text" id="editNoSeri" class="w-full border p-2 rounded"></div>
+                    <div><label class="block font-medium mb-1">KVA</label><input type="text" id="editKva" class="w-full border p-2 rounded"></div>
+                    <div class="col-span-2"><p class="text-xs text-gray-400">Silakan isi manual atau pastikan koneksi cloud stabil.</p></div>
+                </div>
+            `;
         }
     } else if (type === 'konstruksi') {
-        dataAmbil = dbKonstruksi.find(item => item.namaGardu === id);
+        if (typeof dbKonstruksi !== 'undefined' && dbKonstruksi.length > 0) {
+            dataAmbil = dbKonstruksi.find(item => String(item.namaGardu).trim() === String(id).trim());
+        }
+        
         if (dataAmbil) {
             htmlForm = `
                 <input type="hidden" id="editType" value="konstruksi">
                 <input type="hidden" id="editId" value="${dataAmbil.namaGardu}">
                 <div class="grid grid-cols-1 gap-4 text-sm text-gray-800">
-                    <div><label class="block font-medium mb-1">Nama Gardu</label><input type="text" id="editNamaGarduKonstruksi" value="${dataAmbil.namaGardu || ''}" class="w-full border p-2 rounded" readonly bg-gray-100></div>
+                    <div><label class="block font-medium mb-1">Nama Gardu</label><input type="text" id="editNamaGarduKonstruksi" value="${dataAmbil.namaGardu || ''}" class="w-full border p-2 rounded" readonly></div>
                     <div><label class="block font-medium mb-1">Jenis Tiang</label><input type="text" id="editJenisTiang" value="${dataAmbil.jenisTiang || ''}" class="w-full border p-2 rounded"></div>
                     <div><label class="block font-medium mb-1">Nilai Pentanahan (Ω)</label><input type="text" id="editNilaiPentanahan" value="${dataAmbil.nilaiPentanahan || ''}" class="w-full border p-2 rounded"></div>
                     <div><label class="block font-medium mb-1">Jenis Arrester</label><input type="text" id="editJenisArrester" value="${dataAmbil.jenisArrester || ''}" class="w-full border p-2 rounded"></div>
@@ -372,13 +399,3 @@ function bukaModalEdit(type, id) {
         formContainer.innerHTML = htmlForm;
     }
 }
-
-function tutupModalEdit() {
-    const modal = document.getElementById('modalEdit');
-    if (modal) {
-        modal.classList.add('hidden');
-    }
-}
-    </script>
-</body>
-</html>
