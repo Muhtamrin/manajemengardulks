@@ -136,8 +136,7 @@
                 </div>
                 <button onclick="tutupModalEdit()" class="text-slate-400 hover:text-white transition text-2xl font-bold p-1 cursor-pointer">×</button>
             </div>
-            <div class="p-6 overflow-y-auto space-y-4 flex-1" id="formEditContainer">
-            </div>
+            <div class="p-6 overflow-y-auto space-y-4 flex-1" id="formEditContainer"></div>
             <div class="bg-gray-50 px-6 py-3.5 flex justify-end gap-2 border-t shrink-0">
                 <button onclick="tutupModalEdit()" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg text-sm font-semibold transition cursor-pointer">Batal</button>
                 <button onclick="eksekusiSimpanEdit()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-lg text-sm font-semibold shadow transition cursor-pointer">Simpan Perubahan</button>
@@ -165,34 +164,59 @@
             fetch(`${WEB_APP_URL}?target=${type}`, { method: "GET" })
             .then(res => res.json())
             .then(data => {
-                if(type === 'trafo' && data.length > 0) {
-                    dbTrafo = data.map(item => {
+                if (data && data.length > 0) {
+                    // Penerjemah Otomatis agar kebal perbedaan huruf besar/kecil/spasi di Google Sheets
+                    let dataNormal = data.map(item => {
                         let keys = Object.keys(item);
-                        let getV = (alts) => {
-                            let fKey = keys.find(k => alts.includes(k.toLowerCase().trim().replace(/[^a-z0-9]/g, "")));
-                            return fKey ? item[fKey] : "";
+                        let getVal = (alternatives) => {
+                            let matchKey = keys.find(k => alternatives.includes(k.toLowerCase().trim().replace(/[^a-z0-9]/g, "")));
+                            return matchKey ? item[matchKey] : "";
                         };
-                        return {
-                            nama: getV(["nama", "namagardu", "namatrafo"]) || item.nama || "-",
-                            merek: getV(["merek", "merk"]) || item.merek || "-",
-                            noSeri: getV(["noseri", "noseritrafo"]) || item.noSeri || "-",
-                            kva: getV(["kva", "kapasitas", "kapasitaskva"]) || item.kva || "-",
-                            penyulang: getV(["penyulang"]) || item.penyulang || "-",
-                            keypoint: getV(["keypoint"]) || item.keypoint || "-",
-                            jurusan: getV(["jurusan", "jumlahjurusan"]) || item.jurusan || "-",
-                            fasa: getV(["fasa", "jumlahfasa"]) || item.fasa || "-",
-                            konstruksi: getV(["konstruksi", "konstruksitrafo"]) || item.konstruksi || "-",
-                            tahun: getV(["tahun", "tahuntrafo"]) || item.tahun || "-",
-                            lokasiNama: getV(["lokasi", "lokasinama", "koordinat"]) || item.lokasiNama || "-"
-                        };
+
+                        if (type === 'trafo') {
+                            return {
+                                nama: getVal(["nama", "namagardu", "namatrafo"]) || item.nama || "-",
+                                merek: getVal(["merek", "merk"]) || item.merek || "-",
+                                noSeri: getVal(["noseri", "noseritrafo"]) || item.noSeri || "-",
+                                kva: getVal(["kva", "kapasitas", "kapasitaskva"]) || item.kva || "-",
+                                penyulang: getVal(["penyulang"]) || item.penyulang || "-",
+                                keypoint: getVal(["keypoint"]) || item.keypoint || "-",
+                                jurusan: getVal(["jurusan", "jumlahjurusan"]) || item.jurusan || "-",
+                                fasa: getVal(["fasa", "jumlahfasa", "phase"]) || item.fasa || "-",
+                                konstruksi: getVal(["konstruksi", "konstruksitrafo"]) || item.konstruksi || "-",
+                                tahun: getVal(["tahun", "tahuntrafo"]) || item.tahun || "-",
+                                lokasiNama: getVal(["lokasi", "lokasinama", "koordinat", "titikkoordinat"]) || item.lokasiNama || "-"
+                            };
+                        } else if (type === 'fuse') {
+                            return {
+                                namaGardu: getVal(["namagardu", "nama"]) || item.namaGardu || "-",
+                                jenisHandle: getVal(["jenishandle", "handle"]) || item.jenisHandle || "-",
+                                arusHandle: getVal(["arushandle", "kapasitasarushandle"]) || item.arusHandle || 0,
+                                j1R: getVal(["j1r"]) || item.j1R || 0, j1S: getVal(["j1s"]) || item.j1S || 0, j1T: getVal(["j1t"]) || item.j1T || 0,
+                                j2R: getVal(["j2r"]) || item.j2R || 0, j2S: getVal(["j2s"]) || item.j2S || 0, j2T: getVal(["j2t"]) || item.j2T || 0,
+                                j3R: getVal(["j3r"]) || item.j3R || 0, j3S: getVal(["j3s"]) || item.j3S || 0, j3T: getVal(["j3t"]) || item.j3T || 0
+                            };
+                        } else if (type === 'konstruksi') {
+                            return {
+                                namaGardu: getVal(["namagardu", "nama"]) || item.namaGardu || "-",
+                                jenisTiang: getVal(["jenistiang"]) || item.jenisTiang || "-",
+                                nilaiPentanahan: getVal(["nilaipentanahan", "grounding"]) || item.nilaiPentanahan || "-",
+                                jenisArrester: getVal(["jenisarrester", "arrester"]) || item.jenisArrester || "-",
+                                jenisFCO: getVal(["jenisfco", "fco"]) || item.jenisFCO || "-"
+                            };
+                        }
+                        return item;
                     });
-                    renderTrafo(dbTrafo);
+
+                    if (type === 'trafo') { dbTrafo = dataNormal; renderTrafo(dbTrafo); }
+                    else if (type === 'fuse') { dbFuse = dataNormal; renderFuse(dbFuse); }
+                    else if (type === 'konstruksi') { dbKonstruksi = dataNormal; renderKonstruksi(dbKonstruksi); }
+                } else {
+                    eval(`db${type.charAt(0).toUpperCase() + type.slice(1)} = [];`);
+                    eval(`render${type.charAt(0).toUpperCase() + type.slice(1)}([])`);
                 }
-                else if(type === 'trafo') { dbTrafo = []; renderTrafo(dbTrafo); }
-                else if(type === 'fuse') { dbFuse = data; renderFuse(dbFuse); }
-                else if(type === 'konstruksi') { dbKonstruksi = data; renderKonstruksi(dbKonstruksi); }
             }).catch(() => {
-                tbody.innerHTML = `<tr><td colspan="${colSpan}" class="text-center py-4 text-red-500">Gagal terhubung ke cloud. Jalankan via Live Server/Hosting!</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="${colSpan}" class="text-center py-4 text-red-500 font-medium">Gagal mengambil data. Pastikan CORS di-bypass / jalankan via Live Server!</td></tr>`;
             });
         }
 
@@ -200,22 +224,22 @@
             const tbody = document.getElementById('tabelTrafoBody');
             tbody.innerHTML = '';
             if (data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="12" class="text-center py-4 text-gray-500">Tidak ada data trafo.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="12" class="text-center py-4 text-gray-500 font-medium">Tidak ada data trafo.</td></tr>';
                 return;
             }
-            data.forEach((item, i) => {
+            data.forEach((item) => {
                 const tr = document.createElement('tr');
                 tr.className = 'border-b hover:bg-gray-50';
                 let lokasiHTML = (item.lokasiNama || '-');
                 if (item.lokasiNama && (item.lokasiNama.includes(',') || !isNaN(item.lokasiNama.split(',')[0]))) {
                     const koordinatBersih = encodeURIComponent(item.lokasiNama.trim());
-                    lokasiHTML = `<a href="https://maps.google.com/?q=${koordinatBersih}" target="_blank" class="text-blue-600 hover:text-blue-800 underline font-medium">📍 Lihat Rute</a>`;
+                    lokasiHTML = `<a href="https://maps.google.com/maps?q=${koordinatBersih}" target="_blank" class="text-blue-600 hover:text-blue-800 underline font-medium">📍 Lihat Rute</a>`;
                 }
                 tr.innerHTML = `
-                    <td class="py-3 px-4">${item.nama || '-'}</td>
+                    <td class="py-3 px-4 font-semibold">${item.nama || '-'}</td>
                     <td class="py-3 px-4">${item.merek || '-'}</td>
-                    <td class="py-3 px-4 font-mono">${item.noSeri || '-'}</td>
-                    <td class="py-3 px-4 text-center">${item.kva || '-'}</td>
+                    <td class="py-3 px-4 font-mono text-gray-700">${item.noSeri || '-'}</td>
+                    <td class="py-3 px-4 text-center bg-blue-50/50 font-bold">${item.kva || '-'} kVA</td>
                     <td class="py-3 px-4">${item.penyulang || '-'}</td>
                     <td class="py-3 px-4">${item.keypoint || '-'}</td>
                     <td class="py-3 px-4 text-center">${item.jurusan || '-'}</td>
@@ -224,7 +248,7 @@
                     <td class="py-3 px-4 text-center">${item.tahun || '-'}</td>
                     <td class="py-3 px-4">${lokasiHTML}</td>
                     <td class="py-3 px-4 text-center">
-                        <button onclick="bukaModalEdit('trafo', '${item.noSeri}')" class="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded text-xs font-medium cursor-pointer">Edit</button>
+                        <button onclick="bukaModalEdit('trafo', '${item.noSeri}')" class="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded text-xs font-medium cursor-pointer shadow-sm">Edit</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -233,9 +257,9 @@
 
         function renderFuse(arr) {
             let tbody = document.getElementById('tabelFuseBody'); tbody.innerHTML = '';
-            if(arr.length===0) { tbody.innerHTML='<tr><td colspan="13" class="text-center py-4">Kosong</td></tr>'; return; }
+            if(arr.length===0) { tbody.innerHTML='<tr><td colspan="13" class="text-center py-4 text-gray-500 font-medium">Kosong</td></tr>'; return; }
             arr.forEach((f, i) => {
-                tbody.innerHTML += `<tr><td class="px-2 py-2 font-bold text-slate-800 border-r">${f.namaGardu}</td><td class="px-2 py-2 border-r">${f.jenisHandle || '-'}</td><td class="px-2 py-2 border-r font-medium">${f.arusHandle || 0} A</td><td class="px-2 py-2 text-center border-r bg-orange-50">${f.j1R || 0}</td><td class="px-2 py-2 text-center border-r bg-orange-50">${f.j1S || 0}</td><td class="px-2 py-2 text-center border-r bg-orange-50">${f.j1T || 0}</td><td class="px-2 py-2 text-center border-r bg-blue-50">${f.j2R || 0}</td><td class="px-2 py-2 text-center border-r bg-blue-50">${f.j2S || 0}</td><td class="px-2 py-2 text-center border-r bg-blue-50">${f.j2T || 0}</td><td class="px-2 py-2 text-center border-r bg-emerald-50">${f.j3R || 0}</td><td class="px-2 py-2 text-center border-r bg-emerald-50">${f.j3S || 0}</td><td class="px-2 py-2 text-center border-r bg-emerald-50">${f.j3T || 0}</td><td class="px-2 py-2 text-center"><button onclick="editFuse(${i})" class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-xs font-bold cursor-pointer">Edit</button></td></tr>`;
+                tbody.innerHTML += `<tr class="hover:bg-gray-50"><td class="px-2 py-2 font-bold text-slate-800 border-r">${f.namaGardu}</td><td class="px-2 py-2 border-r">${f.jenisHandle || '-'}</td><td class="px-2 py-2 border-r font-medium">${f.arusHandle || 0} A</td><td class="px-2 py-2 text-center border-r bg-orange-50/70 font-mono">${f.j1R || 0}</td><td class="px-2 py-2 text-center border-r bg-orange-50/70 font-mono">${f.j1S || 0}</td><td class="px-2 py-2 text-center border-r bg-orange-50/70 font-mono">${f.j1T || 0}</td><td class="px-2 py-2 text-center border-r bg-blue-50/70 font-mono">${f.j2R || 0}</td><td class="px-2 py-2 text-center border-r bg-blue-50/70 font-mono">${f.j2S || 0}</td><td class="px-2 py-2 text-center border-r bg-blue-50/70 font-mono">${f.j2T || 0}</td><td class="px-2 py-2 text-center border-r bg-emerald-50/70 font-mono">${f.j3R || 0}</td><td class="px-2 py-2 text-center border-r bg-emerald-50/70 font-mono">${f.j3S || 0}</td><td class="px-2 py-2 text-center border-r bg-emerald-50/70 font-mono">${f.j3T || 0}</td><td class="px-2 py-2 text-center"><button onclick="editFuse(${i})" class="bg-amber-500 text-white px-2 py-1 rounded text-xs font-medium cursor-pointer shadow-sm">Edit</button></td></tr>`;
             });
         }
 
@@ -243,20 +267,20 @@
             const tbody = document.getElementById('tabelKonstruksiBody');
             tbody.innerHTML = '';
             if (data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-gray-500">Tidak ada data konstruksi.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-gray-500 font-medium">Tidak ada data konstruksi.</td></tr>';
                 return;
             }
             data.forEach((item) => {
                 const tr = document.createElement('tr');
                 tr.className = 'border-b hover:bg-gray-50';
                 tr.innerHTML = `
-                    <td class="py-3 px-4">${item.namaGardu || '-'}</td>
+                    <td class="py-3 px-4 font-bold text-slate-800">${item.namaGardu || '-'}</td>
                     <td class="py-3 px-4">${item.jenisTiang || '-'}</td>
-                    <td class="py-3 px-4 text-center">${item.nilaiPentanahan || '-'}</td>
+                    <td class="py-3 px-4 text-center font-semibold text-indigo-600 bg-indigo-50/30">${item.nilaiPentanahan || '-'} Ω</td>
                     <td class="py-3 px-4">${item.jenisArrester || '-'}</td>
                     <td class="py-3 px-4">${item.jenisFCO || '-'}</td>
                     <td class="py-3 px-4 text-center">
-                        <button onclick="bukaModalEdit('konstruksi', '${item.namaGardu}')" class="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded text-xs cursor-pointer">Edit</button>
+                        <button onclick="bukaModalEdit('konstruksi', '${item.namaGardu}')" class="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded text-xs cursor-pointer shadow-sm">Edit</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -306,11 +330,11 @@
                 body: JSON.stringify(payloadAkhir)
             })
             .then(() => { 
-                alert("Permintaan pengiriman data terkirim ke Cloud!"); 
+                alert("Data berhasil dikirim ke Cloud!"); 
                 if(resetFn) resetFn(); 
-                setTimeout(() => { tarikData(type); }, 2000);
+                setTimeout(() => { tarikData(type); }, 1500);
             })
-            .catch(() => alert("Koneksi cloud bermasalah. Pastikan tidak membuka file HTML langsung tanpa server."));
+            .catch(() => alert("Koneksi cloud bermasalah."));
         }
 
         function resetFormTrafo() { document.getElementById('trafoForm').reset(); document.getElementById('noSeriTrafo').disabled = false; document.getElementById('modeTrafo').value = "tambah"; document.getElementById('btnBatalTrafo').classList.add('hidden'); }
