@@ -159,13 +159,50 @@
             });
         }
 
-        function renderTrafo(arr) {
-            let tbody = document.getElementById('tabelTrafoBody'); tbody.innerHTML = '';
-            if(arr.length===0) { tbody.innerHTML='<tr><td colspan="12" class="text-center py-4">Kosong</td></tr>'; return; }
-            arr.forEach((t, i) => {
-                tbody.innerHTML += `<tr><td class="px-3 py-2 font-semibold">${t.nama}</td><td class="px-3 py-2">${t.merek}</td><td class="px-3 py-2 font-mono">${t.noSeri}</td><td class="px-3 py-2 text-emerald-700 font-bold">${t.kva} kVA</td><td class="px-3 py-2">${t.penyulang}</td><td class="px-3 py-2">${t.keypoint}</td><td class="px-3 py-2 text-center">${t.jurusan}</td><td class="px-3 py-2">${t.fasa}</td><td class="px-3 py-2">${t.konstruksi}</td><td class="px-3 py-2">${t.tahun}</td><td class="px-3 py-2 truncate max-w-[100px]">${t.lokasiNama}</td><td class="px-3 py-2 text-center"><button onclick="editTrafo(${i})" class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-xs font-bold">Edit</button></td></tr>`;
-            });
+       function renderTrafo(data) {
+    const tbody = document.getElementById('tabelTrafoBody');
+    tbody.innerHTML = '';
+    
+    if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="12" class="text-center py-4 text-gray-500">Tidak ada data trafo.</td></tr>';
+        return;
+    }
+    
+    data.forEach((item) => {
+        const tr = document.createElement('tr');
+        tr.className = 'border-b hover:bg-gray-50';
+        
+        // Logika mendeteksi koordinat untuk link Google Maps Resmi
+        let lokasiHTML = (item.lokasiNama || '-');
+        if (item.lokasiNama && (item.lokasiNama.includes(',') || !isNaN(item.lokasiNama.split(',')[0]))) {
+            const koordinatBersih = encodeURIComponent(item.lokasiNama.trim());
+            lokasiHTML = `<a href="https://www.google.com/maps/search/?api=1&query=${koordinatBersih}" 
+                             target="_blank" 
+                             class="text-blue-600 hover:text-blue-800 underline font-medium inline-flex items-center gap-1">
+                            📍 Lihat Rute
+                          </a>`;
         }
+
+        // Urutan kolom yang sudah disinkronkan agar tidak tertukar lagi
+        tr.innerHTML = `
+            <td class="py-3 px-4">${item.nama || '-'}</td>
+            <td class="py-3 px-4">${item.merek || '-'}</td>
+            <td class="py-3 px-4 font-mono">${item.noSeri || '-'}</td>
+            <td class="py-3 px-4 text-center">${item.kva || '-'}</td>
+            <td class="py-3 px-4">${item.penyulang || '-'}</td>
+            <td class="py-3 px-4">${item.keypoint || '-'}</td>
+            <td class="py-3 px-4 text-center">${item.jurusan || '-'}</td>
+            <td class="py-3 px-4 text-center font-bold">${item.fasa || '-'}</td>
+            <td class="py-3 px-4 text-center">${item.konstruksi || '-'}</td>
+            <td class="py-3 px-4 text-center">${item.tahun || '-'}</td>
+            <td class="py-3 px-4">${lokasiHTML}</td>
+            <td class="py-3 px-4 text-center">
+                <button onclick="bukaModalEdit('trafo', '${item.noSeri}')" class="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded text-xs mr-1">Edit</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
 
         function renderFuse(arr) {
             let tbody = document.getElementById('tabelFuseBody'); tbody.innerHTML = '';
@@ -175,13 +212,32 @@
             });
         }
 
-        function renderKonstruksi(arr) {
-            let tbody = document.getElementById('tabelKonstruksiBody'); tbody.innerHTML = '';
-            if(arr.length===0) { tbody.innerHTML='<tr><td colspan="6" class="text-center py-4">Kosong</td></tr>'; return; }
-            arr.forEach((k, i) => {
-                tbody.innerHTML += `<tr><td class="px-3 py-2 font-semibold">${k.namaGardu}</td><td class="px-3 py-2">${k.jenisTiang}</td><td class="px-3 py-2 font-bold ${k.nilaiPentanahan > 5 ? 'text-red-600': 'text-emerald-600'}">${k.nilaiPentanahan} Ω</td><td class="px-3 py-2">${k.jenisArrester || '-'}</td><td class="px-3 py-2 text-gray-700 font-medium">${k.jenisFCO || '-'}</td><td class="px-3 py-2 text-center"><button onclick="editKonstruksi(${i})" class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-xs font-bold">Edit</button></td></tr>`;
-            });
-        }
+        function renderKonstruksi(data) {
+    const tbody = document.getElementById('tabelKonstruksiBody');
+    tbody.innerHTML = '';
+    
+    if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-gray-500">Tidak ada data konstruksi.</td></tr>';
+        return;
+    }
+    
+    data.forEach((item) => {
+        const tr = document.createElement('tr');
+        tr.className = 'border-b hover:bg-gray-50';
+        
+        tr.innerHTML = `
+            <td class="py-3 px-4">${item.namaGardu || '-'}</td>
+            <td class="py-3 px-4">${item.jenisTiang || '-'}</td>
+            <td class="py-3 px-4 text-center">${item.nilaiPentanahan || '-'}</td>
+            <td class="py-3 px-4">${item.jenisArrester || '-'}</td>
+            <td class="py-3 px-4">${item.jenisFCO || '-'}</td>
+            <td class="py-3 px-4 text-center">
+                <button onclick="bukaModalEdit('konstruksi', '${item.namaGardu}')" class="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded text-xs">Edit</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
 
         function simpanDataTrafo(e) {
             e.preventDefault();
