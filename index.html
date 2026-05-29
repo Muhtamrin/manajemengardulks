@@ -145,6 +145,7 @@
     </div>
 
     <script>
+        // MASUKKAN URL WEB APP ANDA YANG BARU DI SINI (Wajib Berakhiran /exec)
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6SOheVncYB4azUzUls9MMVwfXEbYy3zyYpt9A_yzUwxYZl8bjou5rNYP8_baqK_72/exec";
 
         let dbTrafo = [], dbFuse = [], dbKonstruksi = [];
@@ -156,16 +157,24 @@
             document.getElementById('btn-' + idMenu).className = "menu-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-lg transition bg-emerald-600 text-white shadow-md";
         }
 
+        // --- FUNGSI MENGAMBIL DATA (GET) ---
         function tarikData(type) {
             let tbody = document.getElementById(`tabel${type.charAt(0).toUpperCase() + type.slice(1)}Body`);
             let colSpan = type === 'trafo' ? 12 : (type === 'fuse' ? 13 : 6);
-            tbody.innerHTML = `<tr><td colspan="${colSpan}" class="text-center py-4 text-blue-600 font-medium animate-pulse">Sinkronisasi data cloud...</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="${colSpan}" class="text-center py-4 text-blue-600 font-medium animate-pulse">Menghubungkan ke Cloud Database...</td></tr>`;
 
-            fetch(`${WEB_APP_URL}?target=${type}`, { method: "GET" })
-            .then(res => res.json())
+            // Menambahkan timestamp cache-buster agar data sinkronisasi selalu yang terbaru
+            const urlAman = `${WEB_APP_URL}?target=${type}&_=${new Date().getTime()}`;
+
+            fetch(urlAman, { method: "GET", mode: "cors" })
+            .then(res => {
+                if (!res.ok) throw new Error("Respons server bermasalah.");
+                return res.json();
+            })
             .then(data => {
+                if (data.status === "error") throw new Error(data.message);
+
                 if (data && data.length > 0) {
-                    // Penerjemah Otomatis agar kebal perbedaan huruf besar/kecil/spasi di Google Sheets
                     let dataNormal = data.map(item => {
                         let keys = Object.keys(item);
                         let getVal = (alternatives) => {
@@ -212,11 +221,46 @@
                     else if (type === 'fuse') { dbFuse = dataNormal; renderFuse(dbFuse); }
                     else if (type === 'konstruksi') { dbKonstruksi = dataNormal; renderKonstruksi(dbKonstruksi); }
                 } else {
-                    eval(`db${type.charAt(0).toUpperCase() + type.slice(1)} = [];`);
-                    eval(`render${type.charAt(0).toUpperCase() + type.slice(1)}([])`);
+                    if (type === 'trafo') { dbTrafo = []; renderTrafo([]); }
+                    else if (type === 'fuse') { dbFuse = []; renderFuse([]); }
+                    else if (type === 'konstruksi') { dbKonstruksi = []; renderKonstruksi([]); }
                 }
-            }).catch(() => {
-                tbody.innerHTML = `<tr><td colspan="${colSpan}" class="text-center py-4 text-red-500 font-medium">Gagal mengambil data. Pastikan CORS di-bypass / jalankan via Live Server!</td></tr>`;
+            })
+            .catch((err) => {
+                console.error("Kesalahan Sinkronisasi:", err);
+                tbody.innerHTML = `<tr><td colspan="${colSpan}" class="text-center py-4 text-red-500 font-medium">Gagal mengambil data. Pastikan status Deploy Aplikasi adalah 'Anyone'!</td></tr>`;
+            });
+        }
+
+        // --- FUNGSI MENGIRIM DATA (POST) ---
+        function postCloud(packet, type, resetFn) {
+            const formBody = new URLSearchParams();
+            formBody.append("pilihan", JSON.stringify(packet));
+
+            fetch(WEB_APP_URL, {
+                method: "POST",
+                mode: "cors",
+                headers: { 
+                    "Content-Type": "application/x-www-form-urlencoded" 
+                },
+                body: formBody.toString()
+            })
+            .then(res => {
+                if (!res.ok) throw new Error("Gagal terhubung dengan server Google.");
+                return res.json();
+            })
+            .then(result => { 
+                if (result.status === "success" || result.status === "ok") {
+                    alert("Data berhasil diperbarui di Cloud!"); 
+                    if (resetFn) resetFn(); 
+                    setTimeout(() => { tarikData(type); }, 1000);
+                } else {
+                    alert("Gagal memproses data di Spreadsheet: " + result.message);
+                }
+            })
+            .catch((error) => {
+                console.error("Detail Error POST:", error);
+                alert("Koneksi cloud bermasalah. Pastikan Web App diset ke akses 'Anyone'!");
             });
         }
 
@@ -233,7 +277,7 @@
                 let lokasiHTML = (item.lokasiNama || '-');
                 if (item.lokasiNama && (item.lokasiNama.includes(',') || !isNaN(item.lokasiNama.split(',')[0]))) {
                     const koordinatBersih = encodeURIComponent(item.lokasiNama.trim());
-                    lokasiHTML = `<a href="https://maps.google.com/maps?q=${koordinatBersih}" target="_blank" class="text-blue-600 hover:text-blue-800 underline font-medium">📍 Lihat Rute</a>`;
+                    lokasiHTML = `<a href="https://maps.google.com/?q=${koordinatBersih}" target="_blank" class="text-blue-600 hover:text-blue-800 underline font-medium">📍 Lihat Rute</a>`;
                 }
                 tr.innerHTML = `
                     <td class="py-3 px-4 font-semibold">${item.nama || '-'}</td>
@@ -319,22 +363,6 @@
                 nilaiPentanahan: document.getElementById('nilaiPentanahan').value, jenisArrester: document.getElementById('jenisArrester').value || '-', jenisFCO: document.getElementById('jenisFCO').value || '-'
             };
             postCloud(pack, 'konstruksi', resetFormKonstruksi);
-        }
-
-        function postCloud(packet, type, resetFn) {
-            let payloadAkhir = { pilihan: JSON.stringify(packet) };
-            fetch(WEB_APP_URL, {
-                method: "POST",
-                mode: "no-cors",
-                headers: { "Content-Type": "text/plain" },
-                body: JSON.stringify(payloadAkhir)
-            })
-            .then(() => { 
-                alert("Data berhasil dikirim ke Cloud!"); 
-                if(resetFn) resetFn(); 
-                setTimeout(() => { tarikData(type); }, 1500);
-            })
-            .catch(() => alert("Koneksi cloud bermasalah."));
         }
 
         function resetFormTrafo() { document.getElementById('trafoForm').reset(); document.getElementById('noSeriTrafo').disabled = false; document.getElementById('modeTrafo').value = "tambah"; document.getElementById('btnBatalTrafo').classList.add('hidden'); }
