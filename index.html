@@ -18,7 +18,7 @@
             <button onclick="bukaMenu('menuFuse')" id="btn-menuFuse" class="menu-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-lg transition hover:bg-slate-700 text-slate-300">🏷️ Data Fuse / Jurusan</button>
             <button onclick="bukaMenu('menuKonstruksi')" id="btn-menuKonstruksi" class="menu-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-lg transition hover:bg-slate-700 text-slate-300">🏗️ Data Konstruksi</button>
         </nav>
-        <div class="p-4 border-t border-slate-700 text-center text-xs text-slate-500 bg-slate-900">Versi Cloud v4.2</div>
+        <div class="p-4 border-t border-slate-700 text-center text-xs text-slate-500 bg-slate-900">Versi Cloud v4.3</div>
     </div>
 
     <div class="flex-1 p-8 overflow-y-auto h-screen">
@@ -145,7 +145,7 @@
     </div>
 
     <script>
-        // MASUKKAN URL WEB APP ANDA YANG BARU DI SINI (Wajib Berakhiran /exec)
+        // MASUKKAN URL GOOGLE APPS SCRIPT BERAKHIRAN /exec DI SINI
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzJTy3nxtB-gh5uHpMkDevbYcjQhSUGCq59mo1PPEJO-hC-Hquwwq_Lq96LS5E7sNxd/exec";
 
         let dbTrafo = [], dbFuse = [], dbKonstruksi = [];
@@ -163,7 +163,6 @@
             let colSpan = type === 'trafo' ? 12 : (type === 'fuse' ? 13 : 6);
             tbody.innerHTML = `<tr><td colspan="${colSpan}" class="text-center py-4 text-blue-600 font-medium animate-pulse">Menghubungkan ke Cloud Database...</td></tr>`;
 
-            // Menambahkan timestamp cache-buster agar data sinkronisasi selalu yang terbaru
             const urlAman = `${WEB_APP_URL}?target=${type}&_=${new Date().getTime()}`;
 
             fetch(urlAman, { method: "GET", mode: "cors" })
@@ -178,8 +177,8 @@
                     let dataNormal = data.map(item => {
                         let keys = Object.keys(item);
                         let getVal = (alternatives) => {
-                            let matchKey = keys.find(k => alternatives.includes(k.toLowerCase().trim().replace(/[^a-z0-9]/g, "")));
-                            return matchKey ? item[matchKey] : "";
+                            let matchKey = keys.find(k => alternatives.includes(k.toLowerCase().trim().replace(/\s/g, "")));
+                            return matchKey ? item[matchKey] : null;
                         };
 
                         if (type === 'trafo') {
@@ -199,19 +198,25 @@
                         } else if (type === 'fuse') {
                             return {
                                 namaGardu: getVal(["namagardu", "nama"]) || item.namaGardu || "-",
-                                jenisHandle: getVal(["jenishandle", "handle"]) || item.jenisHandle || "-",
-                                arusHandle: getVal(["arushandle", "kapasitasarushandle"]) || item.arusHandle || 0,
-                                j1R: getVal(["j1r"]) || item.j1R || 0, j1S: getVal(["j1s"]) || item.j1S || 0, j1T: getVal(["j1t"]) || item.j1T || 0,
-                                j2R: getVal(["j2r"]) || item.j2R || 0, j2S: getVal(["j2s"]) || item.j2S || 0, j2T: getVal(["j2t"]) || item.j2T || 0,
-                                j3R: getVal(["j3r"]) || item.j3R || 0, j3S: getVal(["j3s"]) || item.j3S || 0, j3T: getVal(["j3t"]) || item.j3T || 0
+                                jenisHandle: getVal(["jenishandle", "handle", "jenishandlentfuse"]) || item.jenisHandle || "-",
+                                arusHandle: getVal(["arushandle", "kapasitasarushandle", "kapasitasarushandlea"]) || item.arusHandle || 0,
+                                j1R: getVal(["j1r", "jurusan1r", "jrs1r", "jur1r", "amperemeterjurusan1r"]) !== null ? getVal(["j1r", "jurusan1r", "jrs1r", "jur1r", "amperemeterjurusan1r"]) : 0,
+                                j1S: getVal(["j1s", "jurusan1s", "jrs1s", "jur1s", "amperemeterjurusan1s"]) !== null ? getVal(["j1s", "jurusan1s", "jrs1s", "jur1s", "amperemeterjurusan1s"]) : 0,
+                                j1T: getVal(["j1t", "jurusan1t", "jrs1t", "jur1t", "amperemeterjurusan1t"]) !== null ? getVal(["j1t", "jurusan1t", "jrs1t", "jur1t", "amperemeterjurusan1t"]) : 0,
+                                j2R: getVal(["j2r", "jurusan2r", "jrs2r", "jur2r", "amperemeterjurusan2r"]) !== null ? getVal(["j2r", "jurusan2r", "jrs2r", "jur2r", "amperemeterjurusan2r"]) : 0,
+                                j2S: getVal(["j2s", "jurusan2s", "jrs2s", "jur2s", "amperemeterjurusan2s"]) !== null ? getVal(["j2s", "jurusan2s", "jrs2s", "jur2s", "amperemeterjurusan2s"]) : 0,
+                                j2T: getVal(["j2t", "jurusan2t", "jrs2t", "jur2t", "amperemeterjurusan2t"]) !== null ? getVal(["j2t", "jurusan2t", "jrs2t", "jur2t", "amperemeterjurusan2t"]) : 0,
+                                j3R: getVal(["j3r", "jurusan3r", "jrs3r", "jur3r", "amperemeterjurusan3r"]) !== null ? getVal(["j3r", "jurusan3r", "jrs3r", "jur3r", "amperemeterjurusan3r"]) : 0,
+                                j3S: getVal(["j3s", "jurusan3s", "jrs3s", "jur3s", "amperemeterjurusan3s"]) !== null ? getVal(["j3s", "jurusan3s", "jrs3s", "jur3s", "amperemeterjurusan3s"]) : 0,
+                                j3T: getVal(["j3t", "jurusan3t", "jrs3t", "jur3t", "amperemeterjurusan3t"]) !== null ? getVal(["j3t", "jurusan3t", "jrs3t", "jur3t", "amperemeterjurusan3t"]) : 0
                             };
                         } else if (type === 'konstruksi') {
                             return {
                                 namaGardu: getVal(["namagardu", "nama"]) || item.namaGardu || "-",
                                 jenisTiang: getVal(["jenistiang"]) || item.jenisTiang || "-",
-                                nilaiPentanahan: getVal(["nilaipentanahan", "grounding"]) || item.nilaiPentanahan || "-",
-                                jenisArrester: getVal(["jenisarrester", "arrester"]) || item.jenisArrester || "-",
-                                jenisFCO: getVal(["jenisfco", "fco"]) || item.jenisFCO || "-"
+                                nilaiPentanahan: getVal(["nilaipentanahan", "grounding", "nilaipentanahangrounding"]) || item.nilaiPentanahan || "-",
+                                jenisArrester: getVal(["jenisarrester", "arrester", "jenislightingarrester"]) || item.jenisArrester || "-",
+                                jenisFCO: getVal(["jenisfco", "fco", "jenisukuranfco"]) || item.jenisFCO || "-"
                             };
                         }
                         return item;
@@ -240,9 +245,7 @@
             fetch(WEB_APP_URL, {
                 method: "POST",
                 mode: "cors",
-                headers: { 
-                    "Content-Type": "application/x-www-form-urlencoded" 
-                },
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
                 body: formBody.toString()
             })
             .then(res => {
@@ -277,7 +280,7 @@
                 let lokasiHTML = (item.lokasiNama || '-');
                 if (item.lokasiNama && (item.lokasiNama.includes(',') || !isNaN(item.lokasiNama.split(',')[0]))) {
                     const koordinatBersih = encodeURIComponent(item.lokasiNama.trim());
-                    lokasiHTML = `<a href="https://maps.google.com/?q=${koordinatBersih}" target="_blank" class="text-blue-600 hover:text-blue-800 underline font-medium">📍 Lihat Rute</a>`;
+                    lokasiHTML = `<a href="https://www.google.com/maps/search/?api=1&query=${koordinatBersih}" target="_blank" class="text-blue-600 hover:text-blue-800 underline font-medium">📍 Lihat Rute</a>`;
                 }
                 tr.innerHTML = `
                     <td class="py-3 px-4 font-semibold">${item.nama || '-'}</td>
@@ -303,7 +306,7 @@
             let tbody = document.getElementById('tabelFuseBody'); tbody.innerHTML = '';
             if(arr.length===0) { tbody.innerHTML='<tr><td colspan="13" class="text-center py-4 text-gray-500 font-medium">Kosong</td></tr>'; return; }
             arr.forEach((f, i) => {
-                tbody.innerHTML += `<tr class="hover:bg-gray-50"><td class="px-2 py-2 font-bold text-slate-800 border-r">${f.namaGardu}</td><td class="px-2 py-2 border-r">${f.jenisHandle || '-'}</td><td class="px-2 py-2 border-r font-medium">${f.arusHandle || 0} A</td><td class="px-2 py-2 text-center border-r bg-orange-50/70 font-mono">${f.j1R || 0}</td><td class="px-2 py-2 text-center border-r bg-orange-50/70 font-mono">${f.j1S || 0}</td><td class="px-2 py-2 text-center border-r bg-orange-50/70 font-mono">${f.j1T || 0}</td><td class="px-2 py-2 text-center border-r bg-blue-50/70 font-mono">${f.j2R || 0}</td><td class="px-2 py-2 text-center border-r bg-blue-50/70 font-mono">${f.j2S || 0}</td><td class="px-2 py-2 text-center border-r bg-blue-50/70 font-mono">${f.j2T || 0}</td><td class="px-2 py-2 text-center border-r bg-emerald-50/70 font-mono">${f.j3R || 0}</td><td class="px-2 py-2 text-center border-r bg-emerald-50/70 font-mono">${f.j3S || 0}</td><td class="px-2 py-2 text-center border-r bg-emerald-50/70 font-mono">${f.j3T || 0}</td><td class="px-2 py-2 text-center"><button onclick="editFuse(${i})" class="bg-amber-500 text-white px-2 py-1 rounded text-xs font-medium cursor-pointer shadow-sm">Edit</button></td></tr>`;
+                tbody.innerHTML += `<tr class="hover:bg-gray-50"><td class="px-2 py-2 font-bold text-slate-800 border-r">${f.namaGardu}</td><td class="px-2 py-2 border-r">${f.jenisHandle || '-'}</td><td class="px-2 py-2 border-r font-medium">${f.arusHandle || 0} A</td><td class="px-2 py-2 text-center border-r bg-orange-50/70 font-mono font-semibold text-amber-700">${f.j1R}</td><td class="px-2 py-2 text-center border-r bg-orange-50/70 font-mono font-semibold text-amber-700">${f.j1S}</td><td class="px-2 py-2 text-center border-r bg-orange-50/70 font-mono font-semibold text-amber-700">${f.j1T}</td><td class="px-2 py-2 text-center border-r bg-blue-50/70 font-mono font-semibold text-blue-700">${f.j2R}</td><td class="px-2 py-2 text-center border-r bg-blue-50/70 font-mono font-semibold text-blue-700">${f.j2S}</td><td class="px-2 py-2 text-center border-r bg-blue-50/70 font-mono font-semibold text-blue-700">${f.j2T}</td><td class="px-2 py-2 text-center border-r bg-emerald-50/70 font-mono font-semibold text-emerald-700">${f.j3R}</td><td class="px-2 py-2 text-center border-r bg-emerald-50/70 font-mono font-semibold text-emerald-700">${f.j3S}</td><td class="px-2 py-2 text-center border-r bg-emerald-50/70 font-mono font-semibold text-emerald-700">${f.j3T}</td><td class="px-2 py-2 text-center"><button onclick="editFuse(${i})" class="bg-amber-500 text-white px-2 py-1 rounded text-xs font-medium cursor-pointer shadow-sm">Edit</button></td></tr>`;
             });
         }
 
