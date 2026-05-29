@@ -18,7 +18,7 @@
             <button onclick="bukaMenu('menuFuse')" id="btn-menuFuse" class="menu-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-lg transition hover:bg-slate-700 text-slate-300">🏷️ Data Fuse / Jurusan</button>
             <button onclick="bukaMenu('menuKonstruksi')" id="btn-menuKonstruksi" class="menu-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-lg transition hover:bg-slate-700 text-slate-300">🏗️ Data Konstruksi</button>
         </nav>
-        <div class="p-4 border-t border-slate-700 text-center text-xs text-slate-500 bg-slate-900">Versi Cloud v4.4</div>
+        <div class="p-4 border-t border-slate-700 text-center text-xs text-slate-500 bg-slate-900">Versi Cloud v4.5</div>
     </div>
 
     <div class="flex-1 p-8 overflow-y-auto h-screen">
@@ -145,7 +145,6 @@
     </div>
 
     <script>
-        // MASUKKAN URL GOOGLE APPS SCRIPT BERAKHIRAN /exec DI SINI
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzJTy3nxtB-gh5uHpMkDevbYcjQhSUGCq59mo1PPEJO-hC-Hquwwq_Lq96LS5E7sNxd/exec";
 
         let dbTrafo = [], dbFuse = [], dbKonstruksi = [];
@@ -215,8 +214,8 @@
                                 namaGardu: getVal(["namagardu", "nama", "namagardukonstruksi"]) || item.namaGardu || "-",
                                 jenisTiang: getVal(["jenistiang", "tiang"]) || item.jenisTiang || "-",
                                 nilaiPentanahan: getVal(["nilaipentanahan", "grounding", "nilaipentanahangrounding", "pentanahan"]) || item.nilaiPentanahan || "-",
-                                jenisArrester: getVal(["jenisarrester", "arrester", "jenislightingarrester"]) || item.jenisArrester || "-",
-                                jenisFCO: getVal(["jenisfco", "fco", "jenisukuranfco"]) || item.jenisFCO || "-"
+                                jenisArrester: getVal(["jenisarrester", "arrester", "jenislightingarrester", "jenis/kapasitaslightningarrester"]) || item.jenisArrester || "-",
+                                jenisFCO: getVal(["jenisfco", "fco", "jenisukuranfco", "jenis/ukuranfco(fusecutout)"]) || item.jenisFCO || "-"
                             };
                         }
                         return item;
@@ -346,6 +345,7 @@
             postCloud(pack, 'trafo', resetFormTrafo);
         }
 
+        // ... Sisa fungsi helper formulir tetap sama ...
         function simpanDataFuse(e) {
             e.preventDefault();
             let pack = {
