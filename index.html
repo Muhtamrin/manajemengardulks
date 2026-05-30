@@ -60,6 +60,7 @@
                 <h2 id="formTitleFuse" class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Input Data Fuse & Beban Fasa Jurusan</h2>
                 <form id="fuseForm" class="space-y-4" onsubmit="simpanDataFuse(event)">
                     <input type="hidden" id="modeFuse" value="tambah">
+                    <input type="hidden" id="idKunciFuse" value="">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div><label class="block text-xs font-semibold text-gray-700 mb-1">Nama Gardu:</label><input type="text" id="namaGarduFuse" required class="w-full px-3 py-1.5 text-sm border rounded-md"></div>
                         <div><label class="block text-xs font-semibold text-gray-700 mb-1">Jenis Handle NT Fuse:</label><input type="text" id="jenisHandle" placeholder="Contoh: NH Fuse, LBS" class="w-full px-3 py-1.5 text-sm border rounded-md"></div>
@@ -156,7 +157,6 @@
             document.getElementById('btn-' + idMenu).className = "menu-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-lg transition bg-emerald-600 text-white shadow-md";
         }
 
-        // --- FUNGSI MENGAMBIL DATA (GET) ---
         function tarikData(type) {
             let tbody = document.getElementById(`tabel${type.charAt(0).toUpperCase() + type.slice(1)}Body`);
             let colSpan = type === 'trafo' ? 12 : (type === 'fuse' ? 13 : 6);
@@ -236,7 +236,6 @@
             });
         }
 
-        // --- FUNGSI MENGIRIM DATA (POST) ---
         function postCloud(packet, type, resetFn) {
             const formBody = new URLSearchParams();
             formBody.append("pilihan", JSON.stringify(packet));
@@ -345,17 +344,19 @@
             postCloud(pack, 'trafo', resetFormTrafo);
         }
 
-        // ... Sisa fungsi helper formulir tetap sama ...
         function simpanDataFuse(e) {
             e.preventDefault();
+            let mode = document.getElementById('modeFuse').value;
+            let idKunciAsli = mode === "edit" ? document.getElementById('idKunciFuse').value : document.getElementById('namaGarduFuse').value;
+
             let pack = {
-                jenisSheet: "fuse", aksi: document.getElementById('modeFuse').value, idKunci: document.getElementById('namaGarduFuse').value,
+                jenisSheet: "fuse", aksi: mode, idKunci: idKunciAsli,
                 namaGardu: document.getElementById('namaGarduFuse').value, jenisHandle: document.getElementById('jenisHandle').value || '-', arusHandle: document.getElementById('arusHandle').value || 0,
                 j1R: document.getElementById('j1R').value || 0, j1S: document.getElementById('j1S').value || 0, j1T: document.getElementById('j1T').value || 0,
                 j2R: document.getElementById('j2R').value || 0, j2S: document.getElementById('j2S').value || 0, j2T: document.getElementById('j2T').value || 0,
                 j3R: document.getElementById('j3R').value || 0, j3S: document.getElementById('j3S').value || 0, j3T: document.getElementById('j3T').value || 0
             };
-            postCloud(pack, 'fuse', resetFormFuse);
+            postCloud(packet=pack, type='fuse', resetFn=resetFormFuse);
         }
 
         function simpanDataKonstruksi(e) {
@@ -369,16 +370,35 @@
         }
 
         function resetFormTrafo() { document.getElementById('trafoForm').reset(); document.getElementById('noSeriTrafo').disabled = false; document.getElementById('modeTrafo').value = "tambah"; document.getElementById('btnBatalTrafo').classList.add('hidden'); }
+        
         function editFuse(i) {
-            let d = dbFuse[i]; document.getElementById('namaGarduFuse').value = d.namaGardu;
-            document.getElementById('jenisHandle').value = d.jenisHandle; document.getElementById('arusHandle').value = d.arusHandle;
+            let d = dbFuse[i]; 
+            document.getElementById('idKunciFuse').value = d.namaGardu;
+            document.getElementById('namaGarduFuse').value = d.namaGardu;
+            document.getElementById('jenisHandle').value = d.jenisHandle; 
+            document.getElementById('arusHandle').value = d.arusHandle;
             document.getElementById('j1R').value = d.j1R; document.getElementById('j1S').value = d.j1S; document.getElementById('j1T').value = d.j1T;
             document.getElementById('j2R').value = d.j2R; document.getElementById('j2S').value = d.j2S; document.getElementById('j2T').value = d.j2T;
             document.getElementById('j3R').value = d.j3R; document.getElementById('j3S').value = d.j3S; document.getElementById('j3T').value = d.j3T;
-            document.getElementById('modeFuse').value = "edit"; document.getElementById('btnBatalFuse').classList.remove('hidden');
-            bukaMenu('menuFuse'); window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            document.getElementById('modeFuse').value = "edit"; 
+            document.getElementById('btnBatalFuse').classList.remove('hidden');
+            document.getElementById('btnSubmitFuse').innerText = "Simpan Perubahan Fuse & Fasa";
+            document.getElementById('btnSubmitFuse').className = "w-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold py-2 rounded-md transition cursor-pointer";
+            
+            bukaMenu('menuFuse'); 
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
-        function resetFormFuse() { document.getElementById('fuseForm').reset(); document.getElementById('modeFuse').value = "tambah"; document.getElementById('btnBatalFuse').classList.add('hidden'); }
+
+        function resetFormFuse() { 
+            document.getElementById('fuseForm').reset(); 
+            document.getElementById('modeFuse').value = "tambah"; 
+            document.getElementById('idKunciFuse').value = "";
+            document.getElementById('btnBatalFuse').classList.add('hidden'); 
+            document.getElementById('btnSubmitFuse').innerText = "Kirim Data Fuse & Fasa";
+            document.getElementById('btnSubmitFuse').className = "w-full bg-amber-600 hover:bg-amber-700 text-white text-sm font-semibold py-2 rounded-md transition cursor-pointer";
+        }
+
         function resetFormKonstruksi() { document.getElementById('konstruksiForm').reset(); document.getElementById('modeKonstruksi').value = "tambah"; document.getElementById('btnBatalKonstruksi').classList.add('hidden'); }
 
         function saringTabel(type) {
